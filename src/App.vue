@@ -8,4 +8,13 @@ import { ref } from "vue"
 let num = ref(0)
 </script>
 
-<style></style>
+<style>
+@import url("./assets/styles/rebase.less");
+html,
+body {
+  height: 100%;
+}
+#app {
+  height: 100%;
+}
+</style>
