@@ -90,16 +90,19 @@ const loginFn = () => {
           Cookie.set("token", res.data.tokenHead + res.data.token, {
             expires: 7,
           })
-          // 获取用户信息
-          getAdminInfoApi().then((res) => {
-            if (res.code === 200) {
-              // 存储到vuex
-              // res.data.menus
-              store.commit("updateMenus", res.data.menus) // 将数据传递给vuex 使用store.commit("vuex的mutations中的方法名",需要存储的数据)
-              // 跳转home页面
-              router.push("/home")
-            }
+          store.dispatch("getAdminInfo").then((res) => {
+            router.push("/home")
           })
+          // 获取用户信息
+          // getAdminInfoApi().then((res) => {
+          //   if (res.code === 200) {
+          //     // 存储到vuex
+          //     // res.data.menus
+          //     store.commit("updateMenus", res.data.menus) // 将数据传递给vuex 使用store.commit("vuex的mutations中的方法名",需要存储的数据)
+          //     // 跳转home页面
+          //     router.push("/home")
+          //   }
+          // })
         }
       })
     })
