@@ -35,6 +35,44 @@ const router = createRouter({
     routes   // * 路由配置   
 })
 
+const genRoutes = () => {
+    const menus = store.getters.getNewMenus
+    // const routeTable: RouteRecordRaw[] = []
+    // 循环菜单对象
+    for(let key in menus) {
+        const newRoute: RouteRecordRaw = {
+            path:'/' + menus[key].name,
+            name: menus[key].name,
+            component: () => import("../views/home/Home.vue"),
+            redirect:'/' + menus[key].name + '/' + menus[key].children.at(-1).name,
+            children:[]
+        };
+        for(let i = 0; i < menus[key].children.length; i++) {
+            newRoute.children?.push({
+                path:menus[key].children[i].name,
+                name: menus[key].children[i].name,
+                component: () => import(`../views/${menus[key].name}/${menus[key].children[i].name}.vue`),
+            })
+        }
+        // ? 动态添加路由规则
+        router.addRoute(newRoute)
+    }  
+        // ? 动态添加首页
+        router.addRoute({
+            path:"/",
+            name:'home',
+            redirect:'/index',
+            component: () => import("../views/home/Home.vue"),
+            children:[
+                {
+                    path:'index',
+                    name:'index',
+                    component: () => import("../views/index/index.vue")
+                }
+            ]
+        })
+}
+
 // ? 前置导航守卫
 router.beforeEach((to,from,next) => {
     // 1. token && menus(权限列表) 为空
@@ -43,44 +81,23 @@ router.beforeEach((to,from,next) => {
 
         // ? 异步
        store.dispatch("getAdminInfo").then(() =>{
-        const menus = store.getters.getNewMenus
-            // const routeTable: RouteRecordRaw[] = []
-            // 循环菜单对象
-            for(let key in menus) {
-                const newRoute: RouteRecordRaw = {
-                    path:'/' + menus[key].name,
-                    name: menus[key].name,
-                    component: () => import("../views/home/Home.vue"),
-                    redirect:'/' + menus[key].name + '/' + menus[key].children,
-                    children:[]
-                };
-                for(let i = 0; i < menus[key].children.length; i++) {
-                    newRoute.children?.push({
-                        path:menus[key].children[i].name,
-                        name: menus[key].children[i].name,
-                        component: () => import(`../views/${menus[key].name}/${menus[key].children[i].name}.vue`),
-                    })
-                }
-                // ? 动态添加路由规则
-                router.addRoute(newRoute)
-            }  
-                // ? 动态添加首页
-                router.addRoute({
-                    path:"/",
-                    name:'home',
-                    redirect:'/index',
-                    component: () => import("../views/home/Home.vue"),
-                    children:[
-                        {
-                            path:'index',
-                            name:'index',
-                            component: () => import("../views/index/index.vue")
-                        }
-                    ]
-                })
-            next(to.path)
+        genRoutes()
+            next(to)
        })
-    }else {
+    }else if(token && 
+        store.state.menus.length !== 0 && 
+        from.path === '/login' &&
+        to.path === '/home'){
+            // 动态添加路由规则
+            genRoutes()
+            next('index')
+    }else if(!token && to.path !== '/login') {
+        next('/login')
+    }else if(token && to.path === '/login') {
+        next(from)
+    }
+    
+    else {
         next()
     }
 })
