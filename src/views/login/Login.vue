@@ -57,7 +57,7 @@ const rules = reactive({
      *  @简单的校验
      *
      *    @required 必填: true 非必填: false
-     *    @required 不满足规则出现的提示
+     *    @message 不满足规则出现的提示
      *    @trigger  触发时机: blur: 失去焦点 change: 改变
      */
     { required: true, message: "用户名不能为空！", trigger: "blur" },
